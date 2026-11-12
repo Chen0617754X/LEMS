@@ -31,3 +31,6 @@ logs/
 .vercel/
 .netlify/
 .workbuddy-ai/
+
+# 本地辅助脚本（含 token 读取逻辑，不入库）
+push-via-api.cjs
