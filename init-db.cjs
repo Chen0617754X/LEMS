@@ -19,23 +19,42 @@ function splitSql(sql) {
     .filter(s => s.length > 0)
 }
 
+async function resolveWith(servers) {
+  const r = new dns.Resolver()
+  r.setServers(servers)
+  const addrs = await r.resolve4(HOST)
+  return addrs
+}
+
 async function waitForDns(maxWaitSec = 600) {
   const start = Date.now()
+  const resolvers = [['8.8.8.8'], ['1.1.1.1'], ['223.5.5.5']]
   while ((Date.now() - start) / 1000 < maxWaitSec) {
+    // 先试系统默认
     try {
       const addrs = await dns.resolve4(HOST)
       if (addrs.length) {
         console.log(`DNS 已解析: ${HOST} -> ${addrs.join(', ')}`)
-        return true
+        return addrs[0]
       }
-    } catch (e) {
-      // 继续等
+    } catch (e) { /* 继续 */ }
+
+    // 再试公共 DNS
+    for (const s of resolvers) {
+      try {
+        const addrs = await resolveWith(s)
+        if (addrs.length) {
+          console.log(`DNS 已解析 (via ${s[0]}): ${HOST} -> ${addrs.join(', ')}`)
+          return addrs[0]
+        }
+      } catch (e) { /* 继续 */ }
     }
+
     const waited = Math.round((Date.now() - start) / 1000)
     console.log(`[${waited}s] DNS 尚未就绪，继续等待...`)
     await new Promise(r => setTimeout(r, 15000))
   }
-  return false
+  return null
 }
 
 ;(async () => {
@@ -45,17 +64,17 @@ async function waitForDns(maxWaitSec = 600) {
   }
 
   console.log(`等待 ${HOST} DNS 解析 (最多 10 分钟)...`)
-  const ok = await waitForDns()
-  if (!ok) {
+  const resolvedIp = await waitForDns()
+  if (!resolvedIp) {
     console.error('DNS 超时，数据库服务可能仍未 Running')
     process.exit(1)
   }
 
-  console.log(`\n连接 ${USER}@${HOST}:${PORT}/${DB} ...`)
+  console.log(`\n连接 ${USER}@${resolvedIp}:${PORT}/${DB} ...`)
   let conn
   try {
     conn = await mysql.createConnection({
-      host: HOST,
+      host: resolvedIp,
       port: Number(PORT),
       user: USER,
       password: PASSWORD,
@@ -66,7 +85,7 @@ async function waitForDns(maxWaitSec = 600) {
   } catch (err) {
     console.error('连接失败:', err.code || '', err.message)
     if (err.code === 'ER_ACCESS_DENIED_ERROR') {
-      console.error('-> 密码错误，或服务还在初始化中（Building 状态）')
+      console.error('-> 密码错误，或服务还在初始化中')
     }
     process.exit(1)
   }
