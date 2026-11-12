@@ -1,0 +1,28 @@
+
+# Java / Spring Boot
+target/
+*.class
+*.jar
+*.war
+
+# Node.js / Vue
+node_modules/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# System
+.DS_Store
+Thumbs.db
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
