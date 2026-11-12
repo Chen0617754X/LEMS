@@ -1,0 +1,7 @@
+# Render 原生 Java 部署配置（不使用 Docker 时）
+# Render 会自动执行: mvn clean install -DskipTests
+# 然后运行: java -jar target/lems-backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+buildCommand: mvn clean install -DskipTests
+artifacts:
+  - dir: target
+    file: target/lems-backend-0.0.1-SNAPSHOT.jar
