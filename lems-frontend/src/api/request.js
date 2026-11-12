@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 // 创建 Axios 实例
 const request = axios.create({
     // Spring Boot 后端地址
-    baseURL: 'http://localhost:8081',
+    baseURL: import.meta.env.VITE_API_BASE_URL,
 
     // 请求超时时间
     timeout: 10000,
