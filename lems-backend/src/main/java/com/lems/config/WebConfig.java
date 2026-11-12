@@ -29,8 +29,11 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addMapping("/api/**")
                 .allowedOriginPatterns(
+                        // 本地开发
                         "http://localhost:5173",
-                        "http://127.0.0.1:5173"
+                        "http://127.0.0.1:5173",
+                        // Netlify 线上部署
+                        "https://*.netlify.app"
                 )
                 .allowedMethods(
                         "GET",

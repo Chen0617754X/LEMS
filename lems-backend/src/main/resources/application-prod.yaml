@@ -1,0 +1,31 @@
+
+server:
+  port: ${PORT:8081}
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: lems-backend
+
+  datasource:
+    # 云 MySQL (Aiven / TiDB 等) 连接参数说明：
+    #   useSSL=true                    - 启用加密连接
+    #   allowPublicKeyRetrieval=true  - MySQL 8.x caching_sha2_password 认证必需
+    #   requireSSL=true               - 强制 SSL
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/lems?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=true&allowPublicKeyRetrieval=true&requireSSL=true}
+    username: ${DATABASE_USERNAME:lems}
+    password: ${DATABASE_PASSWORD:lems}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 5
+      connection-timeout: 20000
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.lems.entity
+  configuration:
+    map-underscore-to-camel-case: true

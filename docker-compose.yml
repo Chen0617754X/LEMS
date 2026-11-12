@@ -1,0 +1,48 @@
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: lems
+      MYSQL_USER: lems
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-lems}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/lems.sql:/docker-entrypoint-initdb.d/lems.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot 后端
+  backend:
+    build: ./lems-backend
+    ports:
+      - "8081:8081"
+    environment:
+      DATABASE_URL: jdbc:mysql://mysql:3306/lems?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+      DATABASE_USERNAME: lems
+      DATABASE_PASSWORD: ${MYSQL_PASSWORD:-lems}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # 前端 Nginx
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./lems-frontend/dist:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mysql_data:

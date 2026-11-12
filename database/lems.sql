@@ -205,8 +205,9 @@ WHERE equipment_no = 'SB2026004'
 );
 
 -- 创建项目专有MySQL账号
-CREATE USER IF NOT EXISTS 'lems'@'localhost'
+-- Docker 环境下 '%' 表示允许从任何主机连接
+CREATE USER IF NOT EXISTS 'lems'@'%'
 IDENTIFIED BY 'lems';
 GRANT SELECT, INSERT, UPDATE, DELETE
     ON lems.*
-    TO 'lems'@'localhost';
+    TO 'lems'@'%';
